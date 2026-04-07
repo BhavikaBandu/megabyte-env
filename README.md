@@ -1,278 +1,397 @@
-# Megabyte Environment
+---
+title: Megabyte Environment Server
+emoji: 🎮
+colorFrom: green
+colorTo: green
+sdk: docker
+pinned: false
+app_port: 8000
+tags:
+  - openenv
+---
 
-Megabyte Environment is a Reinforcement Learning (RL) simulation built on top of the OpenEnv framework. It is designed to train intelligent agents to manage, repair, and secure complex software dependency graphs—replicating the real-world challenge commonly known as "Dependency Hell."
+# 🎮 Megabyte Environment
 
-The environment focuses on teaching agents how to:
+Megabyte is a Reinforcement Learning (RL) environment built on top of the OpenEnv framework.  
+It simulates a realistic software dependency ecosystem where intelligent agents must diagnose, repair, and secure package manifests.  
 
-* Detect broken builds
-* Resolve dependency conflicts
-* Mitigate security vulnerabilities
-* Maintain system stability under constraints
+The environment models the real-world challenge commonly known as Dependency Hell, where version conflicts and security vulnerabilities propagate through complex dependency graphs.  
 
 ---
 
-## Overview
+## 🎯 Megabyte trains agents to:
 
-Modern software systems rely on deeply interconnected dependency graphs. Version incompatibilities and security vulnerabilities frequently create cascading failures.
-
-Megabyte simulates this ecosystem by exposing an RL agent to a controlled but highly realistic environment where it must reason about:
-
-* Package compatibility
-* Version constraints
-* Security risks (CVEs)
-* Limited action budgets
-
-The agent must balance correctness (build success) with security (zero vulnerabilities).
+- Diagnose broken dependency systems  
+- Resolve version conflicts  
+- Remove vulnerable packages  
+- Restore stable builds under constrained actions  
 
 ---
 
-## Core Concepts
+## 🧠 Overview
 
-### 1. Observation (MegabyteObservation)
+Modern software systems rely on deeply interconnected dependency graphs.  
+A small version mismatch or vulnerable package can cascade into widespread failures.  
 
-This is the only information visible to the agent at each step.
+Megabyte recreates this challenge in a structured RL environment where agents must reason about:  
 
-Fields:
+- package compatibility  
+- version constraints  
+- security vulnerabilities  
+- limited action budgets  
 
-* status: Build state ("SUCCESS" or "FAILURE")
-* build_log: Detailed log explaining failures or warnings
-* current_manifest: Dictionary mapping packages to versions
-* attempts_remaining: Remaining steps before termination
-
-Purpose:
-Provides structured feedback for decision-making without exposing ground truth.
+Agents must balance system correctness (build success) with security (zero vulnerabilities).  
 
 ---
 
-### 2. State (MegabyteState)
+## 🔍 Core Concepts
 
-This is the hidden ground truth, used internally for environment validation and training.
+### 📊 Observation (MegabyteObservation)
 
-Fields:
+Observations are the only information visible to the agent during interaction.  
 
-* initial_manifest: Starting package configuration
-* dependency_rules: Constraints governing compatibility
-* vulnerabilities: List of known CVEs affecting packages
-* available_versions: All valid versions per package
+**Fields:**  
 
-Purpose:
-Defines the full problem space and evaluation criteria.
+- status — Build state (SUCCESS or FAILURE)  
+- log — Dependency conflict report  
+- current_manifest — Dictionary mapping packages → installed versions  
+- attempts_remaining — Remaining actions before termination  
+- task_id — Current task identifier  
+- last_action_error — Error message if the previous action was invalid  
 
----
+**Purpose:**  
 
-### 3. Actions (MegabyteAction)
-
-The agent interacts with the environment through a constrained action space:
-
-* UPGRADE(package, version)
-* DOWNGRADE(package, version)
-* REVERT()
-* RESET()
-
-Design Notes:
-
-* Actions are discrete and deterministic
-* No partial updates: every action fully mutates the manifest
-* Encourages planning rather than brute force
+Observations provide structured feedback for decision-making without exposing full system knowledge.  
 
 ---
 
-## Task Levels
+### 🧩 State (MegabyteState)
 
-The environment is structured into three progressive difficulty levels, each requiring increasingly sophisticated reasoning.
+The state represents the complete internal environment configuration.  
 
----
+**Fields:**  
 
-### Easy: Identification
+- initial_manifest — Original package configuration  
+- current_manifest — Current package configuration  
+- dependency_rules — Package compatibility constraints  
+- vulnerabilities — Known vulnerabilities affecting package versions  
+- available_versions — Allowed versions for each package  
+- max_attempts — Maximum steps allowed in the current task  
 
-Role: Monitor
+**Purpose:**  
 
-Objective:
-Determine whether the current manifest is valid.
-
-Agent Behavior:
-
-* Inspect status
-* Parse build_log if needed
-* No modifications allowed
-
-Success Criteria:
-
-* Correctly classify system health (SUCCESS vs FAILURE)
+This defines the full dependency ecosystem used to evaluate actions.  
 
 ---
 
-### Medium: Dependency Resolution
+## ⚙️ Actions (MegabyteAction)
 
-Role: Package Manager
+Agents interact with the environment through a constrained action space.  
 
-Objective:
-Fix version conflicts and achieve a successful build.
+### 🔹 Classification Action
 
-Agent Behavior:
+CLASSIFY(label)  
 
-* Detect failing packages
-* Consult dependency_rules
-* Search available_versions
-* Apply UPGRADE or DOWNGRADE
+Used only in the Easy task.  
 
-Constraints:
-
-* Limited number of attempts
-
-Success Criteria:
-
-* Transition from FAILURE to SUCCESS
+**Example:**  
+```json
+{
+  "command": "CLASSIFY",
+  "label": "broken_and_insecure"
+}
+```
 
 ---
 
-### Hard: Secure Dependency Resolution
+### 🔹 Repair Actions
 
-Role: Security Engineer
+```text
+UPGRADE(package_id, version)
+DOWNGRADE(package_id, version)
+REVERT(package_id)
+RESET()
+```
 
-Objective:
-Achieve a working build with zero vulnerabilities.
+**Examples:**  
+```json
+{
+  "command": "UPGRADE",
+  "package_id": "typing-extensions",
+  "target_version": "4.6.0"
+}
+```
 
-Agent Behavior:
+**Design notes:**  
 
-* Identify vulnerable packages from vulnerabilities
-* Find secure versions
-* Ensure compatibility with all dependencies
-* Perform multi-step fixes when required
-
-Key Challenge:
-Fixing one vulnerability may break dependencies elsewhere, requiring cascade updates.
-
-Success Criteria:
-
-* status == "SUCCESS"
-* len(vulnerabilities) == 0
-
----
-
-## Environment Mechanics
-
-### Dependency System
-
-* Graph-based dependency relationships
-* Version constraints (e.g., semantic compatibility)
-* Conflict detection during validation
-
-### Build System Simulation
-
-* Deterministic evaluation
-* Structured logs for debugging
-* Failure propagation across dependency chains
-
-### Vulnerability Modeling
-
-* CVE-style tagging
-* Version-specific exposure
-* Security-aware scoring
+- Actions mutate the dependency manifest  
+- Version changes must exist in available_versions  
+- Invalid actions produce structured errors  
 
 ---
 
-## Technical Infrastructure
+## 🧪 Task Levels
 
-Megabyte is deployed via Hugging Face Spaces and communicates using a persistent WebSocket connection.
-
-Key Components:
-
-1. Client (MegabyteEnv)
-
-* Handles communication with the backend
-* Serializes actions
-* Receives observations
-* Validates responses using Pydantic models
-
-2. Backend Environment
-
-* Maintains state
-* Applies actions
-* Computes build results
-* Injects dependency and vulnerability logic
-
-3. Communication Layer
-
-* WebSocket-based
-* Low-latency interaction loop
-* Supports real-time RL training
+Megabyte contains three difficulty levels, each testing different reasoning abilities.  
 
 ---
 
-## RL Loop
+### 🟢 Easy Task — System Triage
 
-Typical interaction cycle:
+**Role:** System Monitor  
+
+**Objective:**  
+
+Classify the system state into one of four categories:  
+
+- safe_and_stable  
+- stable_but_insecure  
+- broken_but_secure  
+- broken_and_insecure  
+
+**Definitions:**  
+
+| Condition | Result |
+|----------|--------|
+| No conflicts + no vulnerabilities | safe_and_stable |
+| No conflicts + vulnerabilities | stable_but_insecure |
+| Conflicts + no vulnerabilities | broken_but_secure |
+| Conflicts + vulnerabilities | broken_and_insecure |
+
+**Characteristics:**  
+
+- Single step task  
+- No system modification allowed  
+
+**Success Criteria:**  
+
+Correct classification.  
+
+---
+
+### 🟡 Medium Task — Dependency Repair
+
+**Role:** Package Manager  
+
+**Objective:**  
+
+Resolve dependency conflicts and restore a valid build.  
+
+**Agent must:**  
+
+- inspect dependency rules  
+- detect incompatible versions  
+- apply upgrades or downgrades  
+
+**Constraints:**  
+
+- limited number of actions  
+- vulnerabilities are ignored  
+
+**Success Criteria:**  
+```text
+build == SUCCESS
+dependency_conflicts == 0
+```
+
+---
+
+### 🔴 Hard Task — Secure Dependency Repair
+
+**Role:** Security Engineer  
+
+**Objective:**  
+
+Repair the system while also eliminating vulnerabilities.  
+
+**Agent must:**  
+
+- resolve dependency conflicts  
+- upgrade or downgrade vulnerable packages  
+- maintain compatibility across the dependency graph  
+
+**Key challenge:**  
+
+Fixing vulnerabilities may introduce dependency conflicts.  
+
+**Success Criteria:**  
+```text
+build == SUCCESS
+dependency_conflicts == 0
+vulnerabilities == 0
+```
+
+---
+
+## ⚙️ Environment Mechanics
+
+### 🔗 Dependency System
+
+Example rule:  
+```
+aiohttp requires aiosignal >=1.4.0
+```
+
+Dependency conflicts occur when version constraints are violated.  
+
+---
+
+### 📦 Version System
+
+```
+available_versions["aiohttp"] → ["3.8.0", "3.9.0", ...]
+```
+
+Agents must choose versions from this set.  
+
+---
+
+### 🔐 Vulnerability Model
+
+Example:  
+```
+aiohttp versions <3.10.11 are vulnerable
+```
+
+Each vulnerability contains:  
+
+- introduced version  
+- fixed version  
+- severity score  
+
+---
+
+## 🔁 Reinforcement Learning Loop
+
+Typical interaction cycle:  
 
 ```python
 obs = env.reset()
 
 done = False
+
 while not done:
     action = agent.act(obs)
-    obs, reward, done, info = env.step(action)
+    result = env.step(action)
+    obs = result.observation
+    reward = result.reward
+    done = result.done
 ```
 
 ---
 
-## Learning Objectives
+## 📊 Scoring
 
-Agents trained in Megabyte learn to:
+Megabyte provides two evaluation layers.  
 
-* Perform constraint reasoning over graphs
-* Interpret unstructured logs
-* Optimize under limited action budgets
-* Balance correctness vs security
-* Execute multi-step planning strategies
+### Step Rewards
 
----
+The environment returns rewards based on:  
 
-## Potential Research Applications
+- dependency conflict reduction  
+- vulnerability reduction  
+- build success  
+- invalid actions  
 
-* Automated dependency management
-* Secure software supply chain optimization
-* Program synthesis under constraints
-* Multi-objective reinforcement learning
-* Autonomous DevOps agents
+These guide agent behavior during training.  
 
 ---
 
-## Example Scenario
+### Final Task Score
 
-Initial State:
+Benchmark graders compute final scores between 0 and 1.  
 
+**Easy Task**  
+```
+correct classification → 1.0
+incorrect → 0.0
+```
+
+**Medium Task**  
+
+Score based on:  
+
+- dependency repair success  
+- efficiency  
+
+**Hard Task**  
+
+Score based on:  
+
+- vulnerability removal  
+- dependency repair  
+- final secure build  
+- efficiency  
+
+---
+
+## 🧪 Example Scenario
+
+**Initial manifest:**  
 ```json
 {
-  "packageA": "1.0",
-  "packageB": "2.0"
+  "aiohttp": "3.8.0",
+  "typing-extensions": "3.6.6"
 }
 ```
 
-Problem:
+**Problems:**  
 
-* packageA@1.0 incompatible with packageB@2.0
-* packageB@2.0 has a vulnerability
+- dependency conflicts  
+- vulnerable versions  
 
-Solution Path:
-
-1. Downgrade packageB to 1.5
-2. Verify compatibility
-3. Confirm vulnerability removed
-
----
-
-## Key Challenges
-
-* Combinatorial explosion of version choices
-* Hidden dependency constraints
-* Trade-offs between stability and security
-* Limited observation vs full state
+**Possible repair sequence:**  
+```
+Upgrade typing-extensions to 4.6.0
+Upgrade aiohttp to 3.10.11
+Verify dependency compatibility
+```
 
 ---
 
-## Hosting
+## 💻 Running Locally
 
-The environment is hosted on Hugging Face Spaces:
+**Install dependencies:**  
+```bash
+pip install openenv-core uvicorn fastapi pydantic
+```
 
-[https://huggingface.co/spaces/BhavikaBandu/megabyte-env](https://huggingface.co/spaces/BhavikaBandu/megabyte-env)
+**Run the environment server:**  
+```bash
+uvicorn server.app:app --host 0.0.0.0 --port 8000
+```
 
+---
+
+## ☁️ Hugging Face Deployment
+
+Megabyte is deployed on Hugging Face Spaces.  
+
+**Environment endpoint:**  
+https://huggingface.co/spaces/BhavikaBandu/megabyte-env  
+
+The deployment exposes:  
+
+- Web interface  
+- REST API  
+- WebSocket interaction  
+
+---
+
+## 🔬 Research Applications
+
+Megabyte enables research in:  
+
+- autonomous dependency management  
+- secure software supply chains  
+- reinforcement learning for DevOps  
+- program repair systems  
+- constraint reasoning over dependency graphs  
+
+---
+
+## 📌 Summary
+
+Megabyte provides a realistic simulation of modern dependency management challenges.  
+
+Agents must reason about version constraints, security vulnerabilities, and limited action budgets to maintain stable and secure software systems.
