@@ -1,16 +1,5 @@
----
-title: Megabyte Environment Server
-emoji: 🎮
-colorFrom: green
-colorTo: green
-sdk: docker
-pinned: false
-app_port: 8000
-tags:
-  - openenv
----
 
-# 🎮 Megabyte Environment
+# Megabyte Environment
 
 Megabyte is a Reinforcement Learning (RL) environment built on top of the OpenEnv framework.  
 It simulates a realistic software dependency ecosystem where intelligent agents must diagnose, repair, and secure package manifests.  
@@ -19,7 +8,7 @@ The environment models the real-world challenge commonly known as Dependency Hel
 
 ---
 
-## 🎯 Megabyte trains agents to:
+## Megabyte trains agents to:
 
 - Diagnose broken dependency systems  
 - Resolve version conflicts  
@@ -28,7 +17,7 @@ The environment models the real-world challenge commonly known as Dependency Hel
 
 ---
 
-## 🧠 Overview
+## Overview
 
 Modern software systems rely on deeply interconnected dependency graphs.  
 A small version mismatch or vulnerable package can cascade into widespread failures.  
@@ -44,9 +33,9 @@ Agents must balance system correctness (build success) with security (zero vulne
 
 ---
 
-## 🔍 Core Concepts
+## Core Concepts
 
-### 📊 Observation (MegabyteObservation)
+### Observation (MegabyteObservation)
 
 Observations are the only information visible to the agent during interaction.  
 
@@ -65,7 +54,7 @@ Observations provide structured feedback for decision-making without exposing fu
 
 ---
 
-### 🧩 State (MegabyteState)
+### State (MegabyteState)
 
 The state represents the complete internal environment configuration.  
 
@@ -84,7 +73,7 @@ This defines the full dependency ecosystem used to evaluate actions.
 
 ---
 
-## ⚙️ Actions (MegabyteAction)
+## Actions (MegabyteAction)
 
 Agents interact with the environment through a constrained action space.  
 
@@ -130,7 +119,7 @@ RESET()
 
 ---
 
-## 🧪 Task Levels
+## Task Levels
 
 Megabyte contains three difficulty levels, each testing different reasoning abilities.  
 
@@ -223,9 +212,9 @@ vulnerabilities == 0
 
 ---
 
-## ⚙️ Environment Mechanics
+## Environment Mechanics
 
-### 🔗 Dependency System
+### Dependency System
 
 Example rule:  
 ```
@@ -236,7 +225,7 @@ Dependency conflicts occur when version constraints are violated.
 
 ---
 
-### 📦 Version System
+### Version System
 
 ```
 available_versions["aiohttp"] → ["3.8.0", "3.9.0", ...]
@@ -246,7 +235,7 @@ Agents must choose versions from this set.
 
 ---
 
-### 🔐 Vulnerability Model
+### Vulnerability Model
 
 Example:  
 ```
@@ -261,7 +250,7 @@ Each vulnerability contains:
 
 ---
 
-## 🔁 Reinforcement Learning Loop
+## Reinforcement Learning Loop
 
 Typical interaction cycle:  
 
@@ -280,7 +269,7 @@ while not done:
 
 ---
 
-## 📊 Scoring
+## Scoring
 
 Megabyte provides two evaluation layers.  
 
@@ -325,7 +314,7 @@ Score based on:
 
 ---
 
-## 🧪 Example Scenario
+## Example Scenario
 
 **Initial manifest:**  
 ```json
@@ -349,7 +338,7 @@ Verify dependency compatibility
 
 ---
 
-## 💻 Running Locally
+## Running Locally
 
 **Install dependencies:**  
 ```bash
@@ -363,7 +352,7 @@ uvicorn server.app:app --host 0.0.0.0 --port 8000
 
 ---
 
-## ☁️ Hugging Face Deployment
+## Hugging Face Deployment
 
 Megabyte is deployed on Hugging Face Spaces.  
 
@@ -378,7 +367,7 @@ The deployment exposes:
 
 ---
 
-## 🔬 Research Applications
+## Research Applications
 
 Megabyte enables research in:  
 
@@ -390,7 +379,7 @@ Megabyte enables research in:
 
 ---
 
-## 📌 Summary
+## Summary
 
 Megabyte provides a realistic simulation of modern dependency management challenges.  
 
