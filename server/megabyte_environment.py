@@ -348,8 +348,6 @@ class MegabyteEnvironment(Environment):
             attempts_remaining=max(0, self.max_attempts - self._step_count),
             task_id=self.task_id,
             last_action_error=self._last_action_error,
-            done=done,
-            reward=reward,
         )
 
     @property
