@@ -1,3 +1,14 @@
+---
+title: Megabyte Environment Server
+emoji: 🎮
+colorFrom: green
+colorTo: green
+sdk: docker
+pinned: false
+app_port: 8000
+tags:
+  - openenv
+---
 
 # Megabyte Environment
 
