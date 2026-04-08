@@ -5,11 +5,13 @@ This module creates an HTTP server that exposes the MegabyteEnvironment
 over HTTP and WebSocket endpoints, compatible with EnvClient.
 
 Endpoints:
+    - GET /      : Root endpoint for Hugging Face Spaces / browser access
+    - GET /health: Health check endpoint
     - POST /reset: Reset the environment
-    - POST /step: Execute an action
-    - GET /state: Get current environment state
+    - POST /step : Execute an action
+    - GET /state : Get current environment state
     - GET /schema: Get action/observation schemas
-    - WS /ws: WebSocket endpoint for persistent sessions
+    - WS /ws     : WebSocket endpoint for persistent sessions
 
 Usage:
     # Development (with auto-reload):
@@ -21,6 +23,8 @@ Usage:
     # Or run directly:
     python -m server.app
 """
+
+from fastapi.responses import JSONResponse
 
 try:
     from openenv.core.env_server.http_server import create_app
@@ -37,7 +41,7 @@ except (ModuleNotFoundError, ImportError):
     from server.megabyte_environment import MegabyteEnvironment
 
 
-# Create the app with web interface and README integration
+# Create the OpenEnv-compatible FastAPI app
 app = create_app(
     MegabyteEnvironment,
     MegabyteAction,
@@ -45,6 +49,36 @@ app = create_app(
     env_name="megabyte",
     max_concurrent_envs=1,  # increase this number to allow more concurrent WebSocket sessions
 )
+
+
+@app.get("/")
+def root():
+    """
+    Root endpoint for browser/Hugging Face access.
+    Prevents 404 at the Space homepage.
+    """
+    return JSONResponse(
+        {
+            "status": "ok",
+            "message": "Megabyte Environment server is running.",
+            "available_endpoints": [
+                "/health",
+                "/schema",
+                "/reset",
+                "/step",
+                "/state",
+                "/ws",
+            ],
+        }
+    )
+
+
+@app.get("/health")
+def health():
+    """
+    Health check endpoint.
+    """
+    return {"status": "healthy"}
 
 
 def main(host: str = "0.0.0.0", port: int = 8000):
