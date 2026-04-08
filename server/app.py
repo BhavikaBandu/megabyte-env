@@ -81,24 +81,9 @@ def health():
     return {"status": "healthy"}
 
 
-def main(host: str = "0.0.0.0", port: int = 8000):
-    """
-    Entry point for direct execution via python -m or uvicorn.
-
-    Args:
-        host: Host address to bind to (default: "0.0.0.0")
-        port: Port number to listen on (default: 8000)
-    """
+def main():
     import uvicorn
-
-    uvicorn.run(app, host=host, port=port)
-
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--host", type=str, default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=8000)
-    args = parser.parse_args()
-    main(host=args.host, port=args.port)
+    main()
