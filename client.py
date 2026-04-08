@@ -4,7 +4,11 @@ from typing import Dict, Any
 
 from openenv.core import EnvClient
 from openenv.core.client_types import StepResult
-from .models import MegabyteAction, MegabyteObservation, MegabyteState
+
+try:
+    from .models import MegabyteAction, MegabyteObservation, MegabyteState
+except ImportError:
+    from models import MegabyteAction, MegabyteObservation, MegabyteState
 
 
 class MegabyteEnv(
