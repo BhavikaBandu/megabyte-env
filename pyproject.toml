@@ -1,0 +1,13 @@
+[project]
+name = "megabyte-env"
+version = "0.1.0"
+description = "Megabyte OpenEnv dependency repair environment"
+
+authors = [
+  { name = "Bhavika Bandu" },
+  { name = "B M Manohara" }
+]
+
+[tool.openenv]
+env = "megabyte"
+entrypoint = "server.app:app"
