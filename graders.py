@@ -18,7 +18,7 @@ from typing import Any, Dict
 # Helper functions
 # ============================================================
 
-EPS = 1e-4
+EPS = 1e-3
 
 
 def _clamp_score(score: float) -> float:

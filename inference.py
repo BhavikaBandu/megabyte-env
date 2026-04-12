@@ -499,7 +499,7 @@ async def run_one_task(client: OpenAI, task_id: str) -> None:
         else:
             score = grade_hard_task(initial_report, final_report, steps_taken, max_steps)
 
-        EPS = 1e-4
+        EPS = 1e-3
         score = max(EPS, min(1.0 - EPS, float(score)))
         success = score >= SUCCESS_SCORE_THRESHOLD
 
